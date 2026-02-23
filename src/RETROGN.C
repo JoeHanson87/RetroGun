@@ -310,7 +310,9 @@ static void kbd_isr(void)
 static void kbd_install(void)
 {
     _go32_dpmi_get_protected_mode_interrupt_vector(9, &kbd_old_handler);
-    /* pm_offset is 32-bit on DOS; cast via size_t for portability */
+    /* pm_offset stores the ISR address. On 32-bit DOS, int and pointer are both
+     * 4 bytes, so the double cast (via size_t) avoids a compiler warning when
+     * building on a 64-bit host while remaining correct on the 32-bit target. */
     kbd_new_handler.pm_offset   = (int)(size_t)kbd_isr;
     kbd_new_handler.pm_selector = _go32_my_cs();
     _go32_dpmi_allocate_iret_wrapper(&kbd_new_handler);
@@ -889,8 +891,8 @@ static void show_message(const char *line1, const char *line2, int ticks)
     unsigned long t_end;
     int len1, len2, x1, x2;
 
-    len1 = 0; { const char *p = line1; while (*p++) len1++; }
-    len2 = 0; { const char *p = line2; while (*p++) len2++; }
+    len1 = (int)strlen(line1);
+    len2 = (int)strlen(line2);
     x1 = (SCREEN_W - len1 * 8) / 2;
     x2 = (SCREEN_W - len2 * 8) / 2;
 
@@ -1064,9 +1066,7 @@ static int run_game(void)
                 return 1;
             } else {
                 char msg[20];
-                msg[0]='W'; msg[1]='A'; msg[2]='V'; msg[3]='E'; msg[4]=' ';
-                msg[5]=(char)('0'+wave); msg[6]=' '; msg[7]='C'; msg[8]='L';
-                msg[9]='E'; msg[10]='A'; msg[11]='R'; msg[12]='\0';
+                snprintf(msg, sizeof(msg), "WAVE %d CLEAR", wave);
                 show_message(msg, "", 36);
                 /* Bonus life every 2 waves */
                 if (wave % 2 == 0 && p_lives < 5) p_lives++;

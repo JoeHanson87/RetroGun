@@ -144,7 +144,7 @@ copy CWSDPMI.EXE a:\
 ```
 RetroGun/
 ├── src/
-│   └── RETROGN.C   Single-file C source (~700 lines)
+│   └── RETROGN.C   Single-file C source (~1100 lines)
 ├── Makefile         Cross-compile (Linux → DOS) and native DOS build
 ├── BUILD.BAT        DOS batch build script
 └── README.md        This file
